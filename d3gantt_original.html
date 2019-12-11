@@ -51,18 +51,18 @@ var svg = d3.selectAll(".svg")
 },
 
 {
-  task: "1F3Z",
+  task: "1F1Z",
   type: "pbueno001",
   startTime: "2013-1-28 06:00", //year/month/day
-  endTime: "2013-1-28 08:00",
+  endTime: "2013-1-28 09:30",
   details: "This actually didn't take any conceptualization"
 },
 
 {
-  task: "1F2Z",
+  task: "2F3Z",
   type: "pbueno001",
-  startTime: "2013-1-28 08:00", //year/month/day
-  endTime: "2013-1-28 21:00",
+  startTime: "2013-1-28 09:30", //year/month/day
+  endTime: "2013-1-28 16:00",
   details: "This actually didn't take any conceptualization"
 },
 
@@ -70,15 +70,15 @@ var svg = d3.selectAll(".svg")
   task: "1F1Z",
   type: "junger002",
   startTime: "2013-1-28 06:00", //year/month/day
-  endTime: "2013-1-28 18:00",
+  endTime: "2013-1-28 10:00",
   details: "This actually didn't take any conceptualization"
 },
 
 {
   task: "3F1Z",
   type: "junger002",
-  startTime: "2013-1-28 18:00", //year/month/day
-  endTime: "2013-1-29 02:00",
+  startTime: "2013-1-28 10:00", //year/month/day
+  endTime: "2013-1-28 20:00",
   details: "This actually didn't take any conceptualization"
 }
 
@@ -276,7 +276,7 @@ function makeGrid(theSidePad, theTopPad, w, h){
 var xAxis = d3.svg.axis()
   .scale(timeScale)
   .orient('bottom')
-  .ticks(d3.time.hours, 4)
+  .ticks(d3.time.hours, 2)
   .tickSize(-h+theTopPad+20, 0, 0)
   .tickFormat(d3.time.format('%m/%d %H:%M'));
 
