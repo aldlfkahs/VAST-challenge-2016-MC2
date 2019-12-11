@@ -1,0 +1,2873 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<title>Building Data Line Chart</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="tabstyle.css">
+	<script src="https://d3js.org/d3.v3.min.js"></script>
+	<link rel="stylesheet" href="test.css">
+	<scrpt type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.3.3/d3.min.js"></scrpt>
+
+	<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/0.5.7/chartjs-plugin-annotation.min.js"></script>
+</head>
+<body>
+	<div id="container">
+		<h2>VAST challenge 2016 MC2 Team Lee Shin</h2>
+		<h2>Building data line chart</h2>
+		<ul class="tab">
+			<li class="current" data-tab="tab1"><a href="#">Main</a></li>
+			<li data-tab="tab2"><a href="#">BuildingData AND Hazium</a></li>
+			<li data-tab="tab3"><a href="#">Data</a></li>
+			<li data-tab="tab4"><a href="#">Data</a></li>
+		</ul>
+		<div id="tab1" class="tabcontent current">
+      <h3>This FloorPlan shows the Zone of each graph entity.</h3>
+			<img src="VAST_EnergyZones_F1.jpg" alt="My Image was gone1" width="1000">
+			<img src="VAST_EnergyZones_F2.jpg" alt="My Image was gone2" width="1000">
+			<img src="VAST_EnergyZones_F3.jpg" alt="My Image was gone3" width="1000">
+		</div>
+		<div id="tab2" class="tabcontent">
+			<h3>Each graph'sdata line shows the portion between each Max Min value</h3>
+			<h3>All_Hazium Concentration</h3>
+			<canvas id="Canvas_hazium" width="1500" height="200"></canvas>
+      <h3>F1_Light&Equipment Power</h3>
+			<canvas id="Canvas_f1_Chart1" width="1500" height="200"></canvas>
+			<h3>F1_TemperatureData</h3>
+      <canvas id="Canvas_f1_Chart3" width="1500" height="200"></canvas>
+			<h3>F1_VAV REHEAT Damper Position</h3>
+			<canvas id="Canvas_f1_Chart4" width="1500" height="200"></canvas>
+			<h3>F1_REHEAT and VAV Coil Power</h3>
+			<canvas id="Canvas_f1_Chart5" width="1500" height="200"></canvas>
+			<h3>F1_Mass Flow Rate</h3>
+			<canvas id="Canvas_f1_Chart6" width="1500" height="200"></canvas>
+			<h3>F1_CO2 Concentration</h3>
+			<canvas id="Canvas_f1_Chart7" width="1500" height="200"></canvas>
+			<h3>F1_SUPPLY INLET Temperature</h3>
+			<canvas id="Canvas_f1_Chart8" width="1500" height="200"></canvas>
+			<h3>F2_Light&Equipment Power</h3>
+			<canvas id="Canvas_f2_Chart1" width="1500" height="200"></canvas>
+			<h3>F2_TemperatureData</h3>
+      <canvas id="Canvas_f2_Chart3" width="1500" height="200"></canvas>
+			<h3>F2_VAV REHEAT Damper Position</h3>
+			<canvas id="Canvas_f2_Chart4" width="1500" height="200"></canvas>
+			<h3>F2_REHEAT and VAV Coil Power</h3>
+			<canvas id="Canvas_f2_Chart5" width="1500" height="200"></canvas>
+			<h3>F2_Mass Flow Rate</h3>
+			<canvas id="Canvas_f2_Chart6" width="1500" height="200"></canvas>
+			<h3>F2_CO2 Concentration</h3>
+			<canvas id="Canvas_f2_Chart7" width="1500" height="200"></canvas>
+			<h3>F2_SUPPLY INLET Temperature</h3>
+			<canvas id="Canvas_f2_Chart8" width="1500" height="200"></canvas>
+			<h3>F3_Light&Equipment Power</h3>
+			<canvas id="Canvas_f3_Chart1" width="1500" height="200"></canvas>
+			<h3>F3_TemperatureData</h3>
+      <canvas id="Canvas_f3_Chart3" width="1500" height="200"></canvas>
+			<h3>F3_VAV REHEAT Damper Position</h3>
+			<canvas id="Canvas_f3_Chart4" width="1500" height="200"></canvas>
+			<h3>F3_REHEAT and VAV Coil Power</h3>
+			<canvas id="Canvas_f3_Chart5" width="1500" height="200"></canvas>
+			<h3>F3_Mass Flow Rate</h3>
+			<canvas id="Canvas_f3_Chart6" width="1500" height="200"></canvas>
+			<h3>F3_CO2 Concentration</h3>
+			<canvas id="Canvas_f3_Chart7" width="1500" height="200"></canvas>
+			<h3>F3_SUPPLY INLET Temperature</h3>
+			<canvas id="Canvas_f3_Chart8" width="1500" height="200"></canvas>
+		</div>
+		<div id="tab3" class="tabcontent">
+			<h2>Each data line shows the portion between each Max Min value</h2>
+		</div>
+		<div id="tab4" class="tabcontent">
+		</div>
+	</div>
+
+	<script type="text/javascript"> // CSV parsing
+		Arr_BuildingData = new Array();
+		Arr_hazium = new Array();
+		$(function() {//hazium reading and config making
+			var fileName2 = "hazium";
+			var parseName2 = fileName2 + '.csv';
+			$.ajax({
+				url:parseName2,
+				dataType:'text',
+				success: function(data) {
+					var allRow = data.split(/\r?\n|\r/);
+					// 각 행 마다
+					for(var singleRow = 0; singleRow < allRow.length; singleRow++) {
+						var collapse = allRow[singleRow].split(",");
+						Arr_hazium[singleRow] = new Array();
+						for(var i = 0; i< collapse.length; i++) {
+							Arr_hazium[singleRow][i] = collapse[i];
+						}
+					}
+					var Colors = ['rgb(141,211,199)', 'rgb(31,120,180)', 'rgb(190,186,218)', 'rgb(251,128,114)', 'rgb(128,177,211)',
+					 'rgb(253,180,98)', 'rgb(179,222,105)', 'rgb(252,205,229)', 'rgb(217,217,217)', 'rgb(188,128,189)', 'rgb(204,235,197)', 'rgb(255,237,111)'];
+					//all data aggregate 30min
+					for(var i = 0; i < 4033; i++){//hazium Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						var Time_parse = Arr_hazium[i][0].split("-");
+						hazium_config.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+					}
+					for(var j = 1; j < 5; j++){//hazium
+						if(j === 1) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_hazium[i][j]);
+								minval = Math.min(minval, Arr_hazium[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									hazium_config.data.datasets[0].label = Arr_hazium[i][j];
+									hazium_config.data.datasets[0].backgroundColor = Color[0];
+									hazium_config.data.datasets[0].borderColor = Color[0];
+								}
+								else {
+									var percentData = Math.round((Arr_hazium[i][j] - minval)*100000 / (maxval - minval))/1000;
+									hazium_config.data.datasets[j - 1].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_hazium[i][j]);
+								minval = Math.min(minval, Arr_hazium[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_hazium[i][j];
+									emptydatasets.backgroundColor = Colors[j - 1];
+									emptydatasets.borderColor = Colors[j - 1];
+									hazium_config.data.datasets.push(emptydatasets);
+								}
+								var percentData = Math.round((Arr_hazium[i][j] - minval)*100000 / (maxval - minval))/1000;
+								hazium_config.data.datasets[j - 1].data.push(percentData);
+							}
+						}
+					}//hazium concentration end
+				}//success function
+			});//ajax
+		});//total reading
+  	$(function() {
+	  	var fileName = "bldgCSV_0";
+	  	var parseName = "";
+			parseName = fileName + '.csv';	// 파일 경로 + sequence + 확장자
+	  	$.ajax({
+		  	url:parseName,
+	  		dataType:'text',
+  			success: function(data) {
+			  	var allRow = data.split(/\r?\n|\r/);
+					var textLine = "";
+					for(var singleRow = 0; singleRow < allRow.length; singleRow++) {//reading building data
+						var collapse = allRow[singleRow].split(",");
+						Arr_BuildingData[singleRow] = new Array();
+						for(var i = 0; i < collapse.length; i++){
+							Arr_BuildingData[singleRow][i] = collapse[i];
+						}
+					}
+					// chart config
+					var Colors = [
+					 'rgb(141,211,199)', 'rgb(31,120,180)', 'rgb(190,186,218)', 'rgb(251,128,114)',
+					 'rgb(128,177,211)', 'rgb(253,180,98)', 'rgb(179,222,105)', 'rgb(252,205,229)',
+					 'rgb(217,217,250)', 'rgb(188,128,189)', 'rgb(204,235,197)', 'rgb(255,237,111)',
+					 'rgb(166,206,227)', 'rgb(178,223,138)', 'rgb(51,160,44)', 'rgb(251,154,153)',
+					 'rgb(227,26,28)', 'rgb( 253,191,111)', 'rgb(255,127,0)', 'rgb(202,178,214)',
+					 'rgb( 106,61,154)', 'rgb(255,255,153)','rgb( 177,89,40)'];
+					//all data aggregate 30min
+					//F1
+					for(var i = 0; i < 4033; i++){//F1 Light&Equip Power Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							config1.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 1; j < 17; j++){//F1 Light&Equip Power
+						if(j === 1) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									config1.data.datasets[0].label = Arr_BuildingData[i][j];
+									config1.data.datasets[0].backgroundColor = 'rgb(141,211,199)';
+									config1.data.datasets[0].borderColor = 'rgb(141,211,199)';
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									config1.data.datasets[j - 1].data.push(percentData);
+								}
+							}
+						}
+						else if(j > 8) {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[3];
+									emptydatasets.borderColor = Colors[3];
+									config1.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 / (maxval - minval))/1000;
+									config1.data.datasets[j - 1].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[0];
+									emptydatasets.borderColor = Colors[0];
+									config1.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 / (maxval - minval))/1000;
+									config1.data.datasets[j - 1].data.push(percentData);
+								}
+							}
+						}
+					}//F1 LightPower end
+					/*for(var i = 0; i < 4033; i++){//F1 EquipPower Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							config2.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 9; j < 17; j++){//F1 EquipPower
+						if(j === 9) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									config2.data.datasets[0].label = Arr_BuildingData[i][j];
+									config2.data.datasets[0].backgroundColor = Color[j - 9];
+									config2.data.datasets[0].borderColor = Color[j - 9];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 / (maxval - minval))/1000;
+									config2.data.datasets[j - 9].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 9];
+									emptydatasets.borderColor = Colors[j - 9];
+									config2.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 / (maxval - minval))/1000;
+									config2.data.datasets[j - 9].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end*/
+					for(var i = 0; i < 4033; i++){//F1 HeatStat Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							config3.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 17; j < 27; j++){//F1 HeatStat
+						if(j === 17) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									config3.data.datasets[0].label = Arr_BuildingData[i][j];
+									config3.data.datasets[0].backgroundColor = Color[j - 17];
+									config3.data.datasets[0].borderColor = Color[j - 17];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 / (maxval - minval))/1000;
+									config3.data.datasets[j - 17].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 17];
+									emptydatasets.borderColor = Colors[j - 17];
+									config3.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 / (maxval - minval))/1000;
+									config3.data.datasets[j - 17].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					for(var i = 0; i < 4033; i++){//F1 VAV REHEAT Damper Position Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							config4.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 27; j < 35; j++){//F1 VAV REHEAT Damper Position
+						if(j === 27) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									config4.data.datasets[0].label = Arr_BuildingData[i][j];
+									config4.data.datasets[0].backgroundColor = Color[j - 27];
+									config4.data.datasets[0].borderColor = Color[j - 27];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									config4.data.datasets[j - 27].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 27];
+									emptydatasets.borderColor = Colors[j - 27];
+									config4.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									config4.data.datasets[j - 27].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					for(var i = 0; i < 4033; i++){//F1 REHEAT and VAV Coil Power Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							config5.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 35; j < 45; j++){//F1 REHEAT and VAV Coil Power
+						if(j === 35) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									config5.data.datasets[0].label = Arr_BuildingData[i][j];
+									config5.data.datasets[0].backgroundColor = Color[j - 35];
+									config5.data.datasets[0].borderColor = Color[j - 35];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									config5.data.datasets[j - 35].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 35];
+									emptydatasets.borderColor = Colors[j - 35];
+									config5.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									config5.data.datasets[j - 35].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					for(var i = 0; i < 4033; i++){//F1 Mass Flow Rate Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							config6.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 45; j < 58; j++){//F1 Mass Flow Rate
+						if(j === 45) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									config6.data.datasets[0].label = Arr_BuildingData[i][j];
+									config6.data.datasets[0].backgroundColor = Color[j - 45];
+									config6.data.datasets[0].borderColor = Color[j - 45];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									config6.data.datasets[j - 45].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 45];
+									emptydatasets.borderColor = Colors[j - 45];
+									config6.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									config6.data.datasets[j - 45].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					for(var i = 0; i < 4033; i++){//F1 CO2 Concen Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							config7.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 58; j < 66; j++){//F1 CO2 Concen Rate
+						if(j === 58) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									config7.data.datasets[0].label = Arr_BuildingData[i][j];
+									config7.data.datasets[0].backgroundColor = Color[j - 58];
+									config7.data.datasets[0].borderColor = Color[j - 58];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									config7.data.datasets[j - 58].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 58];
+									emptydatasets.borderColor = Colors[j - 58];
+									config7.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									config7.data.datasets[j - 58].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					for(var i = 0; i < 4033; i++){//F1 SUPPLY INLET Temp Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							config8.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 66; j < 74; j++){//F1 SUPPLY INLET Temp
+						if(j === 66) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									config8.data.datasets[0].label = Arr_BuildingData[i][j];
+									config8.data.datasets[0].backgroundColor = Color[j - 66];
+									config8.data.datasets[0].borderColor = Color[j - 66];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									config8.data.datasets[j - 66].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 66];
+									emptydatasets.borderColor = Colors[j - 66];
+									config8.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									config8.data.datasets[j - 66].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					//F2
+					for(var i = 0; i < 4033; i++){//F2 Light&Equip Power Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							f2config1.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 74; j < 108; j++){//F2 Light&Equip Power
+						if(j === 74) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									f2config1.data.datasets[0].label = Arr_BuildingData[i][j];
+									f2config1.data.datasets[0].backgroundColor ='rgb(141,211,199)';
+									f2config1.data.datasets[0].borderColor = 'rgb(141,211,199)';
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f2config1.data.datasets[j - 74].data.push(percentData);
+								}
+							}
+						}
+						else if(j > 90) {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[3];
+									emptydatasets.borderColor = Colors[3];
+									f2config1.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 / (maxval - minval))/1000;
+									f2config1.data.datasets[j - 74].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[0];
+									emptydatasets.borderColor = Colors[0];
+									f2config1.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f2config1.data.datasets[j - 74].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					for(var i = 0; i < 4033; i++){//F2 HeatStat Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							f2config3.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 108; j < 125; j++){//F2 HeatStat
+						if(j === 108) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									f2config3.data.datasets[0].label = Arr_BuildingData[i][j];
+									f2config3.data.datasets[0].backgroundColor = Color[j - 108];
+									f2config3.data.datasets[0].borderColor = Color[j - 108];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 / (maxval - minval))/1000;
+									f2config3.data.datasets[j - 108].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 108];
+									emptydatasets.borderColor = Colors[j - 108];
+									f2config3.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 / (maxval - minval))/1000;
+									f2config3.data.datasets[j - 108].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					for(var i = 0; i < 4033; i++){//F2 VAV REHEAT Damper Position Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							f2config4.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 125; j < 142; j++){//F2 VAV REHEAT Damper Position
+						if(j === 125) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									f2config4.data.datasets[0].label = Arr_BuildingData[i][j];
+									f2config4.data.datasets[0].backgroundColor = Color[j - 125];
+									f2config4.data.datasets[0].borderColor = Color[j - 125];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f2config4.data.datasets[j - 125].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 125];
+									emptydatasets.borderColor = Colors[j - 125];
+									f2config4.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f2config4.data.datasets[j - 125].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					for(var i = 0; i < 4033; i++){//F2 REHEAT and VAV Coil Power Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							f2config5.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 142; j < 161; j++){//F2 REHEAT and VAV Coil Power
+						if(j === 142) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									f2config5.data.datasets[0].label = Arr_BuildingData[i][j];
+									f2config5.data.datasets[0].backgroundColor = Color[j - 142];
+									f2config5.data.datasets[0].borderColor = Color[j - 142];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f2config5.data.datasets[j - 142].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 142];
+									emptydatasets.borderColor = Colors[j - 142];
+									f2config5.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f2config5.data.datasets[j - 142].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					for(var i = 0; i < 4033; i++){//F2 Mass Flow Rate Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							f2config6.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 161; j < 182; j++){//F2 Mass Flow Rate
+						if(j === 161) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									f2config6.data.datasets[0].label = Arr_BuildingData[i][j];
+									f2config6.data.datasets[0].backgroundColor = Color[j - 161];
+									f2config6.data.datasets[0].borderColor = Color[j - 161];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f2config6.data.datasets[j - 161].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 161];
+									emptydatasets.borderColor = Colors[j - 161];
+									f2config6.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f2config6.data.datasets[j - 161].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					for(var i = 0; i < 4033; i++){//F2 CO2 Concen Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							f2config7.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 182; j < 199; j++){//F2 CO2 Concen Rate
+						if(j === 182) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									f2config7.data.datasets[0].label = Arr_BuildingData[i][j];
+									f2config7.data.datasets[0].backgroundColor = Color[j - 182];
+									f2config7.data.datasets[0].borderColor = Color[j - 182];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f2config7.data.datasets[j - 182].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 182];
+									emptydatasets.borderColor = Colors[j - 182];
+									f2config7.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f2config7.data.datasets[j - 182].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					for(var i = 0; i < 4033; i++){//F2 SUPPLY INLET Temp Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							f2config8.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 199; j < 218; j++){//F2 SUPPLY INLET Temp
+						if(j === 199) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									f2config8.data.datasets[0].label = Arr_BuildingData[i][j];
+									f2config8.data.datasets[0].backgroundColor = Color[j - 199];
+									f2config8.data.datasets[0].borderColor = Color[j - 199];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f2config8.data.datasets[j - 199].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 199];
+									emptydatasets.borderColor = Colors[j - 199];
+									f2config8.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f2config8.data.datasets[j - 199].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					//F3
+					for(var i = 0; i < 4033; i++){//F3 Light&Equip Power Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							f3config1.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 218; j < 242; j++){//F3 Light&Equip Power
+						if(j === 218) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									f3config1.data.datasets[0].label = Arr_BuildingData[i][j];
+									f3config1.data.datasets[0].backgroundColor ='rgb(141,211,199)';
+									f3config1.data.datasets[0].borderColor = 'rgb(141,211,199)';
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f3config1.data.datasets[j - 218].data.push(percentData);
+								}
+							}
+						}
+						else if(j > 229) {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[3];
+									emptydatasets.borderColor = Colors[3];
+									f3config1.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 / (maxval - minval))/1000;
+									f3config1.data.datasets[j - 218].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[0];
+									emptydatasets.borderColor = Colors[0];
+									f3config1.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f3config1.data.datasets[j - 218].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					for(var i = 0; i < 4033; i++){//F3 HeatStat Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							f3config3.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 242; j < 254; j++){//F3 HeatStat
+						if(j === 242) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									f3config3.data.datasets[0].label = Arr_BuildingData[i][j];
+									f3config3.data.datasets[0].backgroundColor = Color[j - 242];
+									f3config3.data.datasets[0].borderColor = Color[j - 242];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 / (maxval - minval))/1000;
+									f3config3.data.datasets[j - 242].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 242];
+									emptydatasets.borderColor = Colors[j - 242];
+									f3config3.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 / (maxval - minval))/1000;
+									f3config3.data.datasets[j - 242].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					for(var i = 0; i < 4033; i++){//F2 VAV REHEAT Damper Position Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							f3config4.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 254; j < 266; j++){//F2 VAV REHEAT Damper Position
+						if(j === 254) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									f3config4.data.datasets[0].label = Arr_BuildingData[i][j];
+									f3config4.data.datasets[0].backgroundColor = Color[j - 254];
+									f3config4.data.datasets[0].borderColor = Color[j - 254];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f3config4.data.datasets[j - 254].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 254];
+									emptydatasets.borderColor = Colors[j - 254];
+									f3config4.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f3config4.data.datasets[j - 254].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					for(var i = 0; i < 4033; i++){//F2 REHEAT and VAV Coil Power Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							f3config5.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 266; j < 280; j++){//F2 REHEAT and VAV Coil Power
+						if(j === 266) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									f3config5.data.datasets[0].label = Arr_BuildingData[i][j];
+									f3config5.data.datasets[0].backgroundColor = Color[j - 266];
+									f3config5.data.datasets[0].borderColor = Color[j - 266];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f3config5.data.datasets[j - 266].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 266];
+									emptydatasets.borderColor = Colors[j - 266];
+									f3config5.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f3config5.data.datasets[j - 266].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					for(var i = 0; i < 4033; i++){//F2 Mass Flow Rate Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							f3config6.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 280; j < 296; j++){//F2 Mass Flow Rate
+						if(j === 280) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									f3config6.data.datasets[0].label = Arr_BuildingData[i][j];
+									f3config6.data.datasets[0].backgroundColor = Color[j - 280];
+									f3config6.data.datasets[0].borderColor = Color[j - 280];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f3config6.data.datasets[j - 280].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 280];
+									emptydatasets.borderColor = Colors[j - 280];
+									f3config6.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f3config6.data.datasets[j - 280].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					for(var i = 0; i < 4033; i++){//F2 CO2 Concen Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							f3config7.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 296; j < 308; j++){//F2 CO2 Concen Rate
+						if(j === 296) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									f3config7.data.datasets[0].label = Arr_BuildingData[i][j];
+									f3config7.data.datasets[0].backgroundColor = Color[j - 296];
+									f3config7.data.datasets[0].borderColor = Color[j - 296];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f3config7.data.datasets[j - 296].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 296];
+									emptydatasets.borderColor = Colors[j - 296];
+									f3config7.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f3config7.data.datasets[j - 296].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+					for(var i = 0; i < 4033; i++){//F2 SUPPLY INLET Temp Timestamp Reading on graph
+						if(i === 0) continue; //Index Name
+						if(i%6 === 1) {
+							var Time_parse = Arr_BuildingData[i][0].split("-");
+							f3config8.data.labels.push(Time_parse[1] + "-" + Time_parse[2]);
+						}
+					}
+					for(var j = 308; j < 322; j++){//F2 SUPPLY INLET Temp
+						if(j === 308) {//first zone
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){//index
+									f3config8.data.datasets[0].label = Arr_BuildingData[i][j];
+									f3config8.data.datasets[0].backgroundColor = Color[j - 308];
+									f3config8.data.datasets[0].borderColor = Color[j - 308];
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f3config8.data.datasets[j - 308].data.push(percentData);
+								}
+							}
+						}
+						else {
+							var maxval = 0;
+							var minval = 1000000;
+							for(var i = 0; i< 4032; i++) {
+								if(i ===0) continue;
+								maxval = Math.max(maxval, Arr_BuildingData[i][j]);
+								minval = Math.min(minval, Arr_BuildingData[i][j]);
+							}
+							if (maxval === minval) {
+								maxval = minval*2;
+							}
+							for(var i = 0; i< 4032; i++) {
+								if(i === 0){
+									var emptydatasets = {
+										label:'temp',
+										backgroundColor: 'rgb(1,1,1)',
+										borderColor: 'rgb(1,1,1)',
+										borderWidth: 1,
+										pointRadius: 1,
+										data: [],
+										fill: false
+									};
+									emptydatasets.label = Arr_BuildingData[i][j];
+									emptydatasets.backgroundColor = Colors[j - 308];
+									emptydatasets.borderColor = Colors[j - 308];
+									f3config8.data.datasets.push(emptydatasets);
+								}
+								else if(i%6 === 0) {
+									var percentData = Math.round((Arr_BuildingData[i][j] - minval)*100000 /
+									 (maxval - minval))/1000;
+									f3config8.data.datasets[j - 308].data.push(percentData);
+								}
+							}
+						}
+					}//F1 EquipPower end
+		  	}//success function
+	  	});//ajax
+		});//total reading function
+
+		//f1
+		var hazium_ctx = document.getElementById('Canvas_hazium').getContext('2d');
+		var f1_ctx1 = document.getElementById('Canvas_f1_Chart1').getContext('2d');
+		var f1_ctx3 = document.getElementById('Canvas_f1_Chart3').getContext('2d');
+		var f1_ctx4 = document.getElementById('Canvas_f1_Chart4').getContext('2d');
+		var f1_ctx5 = document.getElementById('Canvas_f1_Chart5').getContext('2d');
+		var f1_ctx6 = document.getElementById('Canvas_f1_Chart6').getContext('2d');
+		var f1_ctx7 = document.getElementById('Canvas_f1_Chart7').getContext('2d');
+		var f1_ctx8 = document.getElementById('Canvas_f1_Chart8').getContext('2d');
+		//f2
+		var f2_ctx1 = document.getElementById('Canvas_f2_Chart1').getContext('2d');
+		var f2_ctx3 = document.getElementById('Canvas_f2_Chart3').getContext('2d');
+		var f2_ctx4 = document.getElementById('Canvas_f2_Chart4').getContext('2d');
+		var f2_ctx5 = document.getElementById('Canvas_f2_Chart5').getContext('2d');
+		var f2_ctx6 = document.getElementById('Canvas_f2_Chart6').getContext('2d');
+		var f2_ctx7 = document.getElementById('Canvas_f2_Chart7').getContext('2d');
+		var f2_ctx8 = document.getElementById('Canvas_f2_Chart8').getContext('2d');
+		//f3
+		var f3_ctx1 = document.getElementById('Canvas_f3_Chart1').getContext('2d');
+		var f3_ctx3 = document.getElementById('Canvas_f3_Chart3').getContext('2d');
+		var f3_ctx4 = document.getElementById('Canvas_f3_Chart4').getContext('2d');
+		var f3_ctx5 = document.getElementById('Canvas_f3_Chart5').getContext('2d');
+		var f3_ctx6 = document.getElementById('Canvas_f3_Chart6').getContext('2d');
+		var f3_ctx7 = document.getElementById('Canvas_f3_Chart7').getContext('2d');
+		var f3_ctx8 = document.getElementById('Canvas_f3_Chart8').getContext('2d');
+
+		//f1
+		var hazium_config = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.2)',
+      		}]
+    		}
+			}
+		};
+		var config1 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		/*var config2 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};*/
+		var config3 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		var config4 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		var config5 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		var config6 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		var config7 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		var config8 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		//f2
+		var f2config1 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		var f2config3 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		var f2config4 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		var f2config5 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		var f2config6 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		var f2config7 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		var f2config8 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		//f3
+		var f3config1 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		var f3config3 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		var f3config4 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		var f3config5 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		var f3config6 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		var f3config7 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		var f3config8 = {
+			type: 'line',
+			data: {
+				labels: [],
+				datasets: [{
+						label: 'Red Line',
+						backgroundColor: 'rgb(255, 99, 132)',
+						borderColor: 'rgb(255, 99, 132)',
+						borderWidth: 1,
+						pointRadius: 1,
+						data: [],
+						fill: false
+				}]
+			},
+			options: {
+				tooltips: {
+					mode: 'index'
+				},
+				scales: {
+					xAxes: [{
+						id: 'x-axis-1'
+					}]
+				},
+				annotation: {
+      		drawTime: "afterDraw",
+      		annotations: [{
+      			id: 'box1',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-04 0:00',
+		        xMax: '06-05 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		},{
+      			id: 'box2',
+		        type: 'box',
+    		    xScaleID: 'x-axis-1',
+        		xMin: '06-11 0:00',
+		        xMax: '06-12 23:30',
+    		    backgroundColor: 'rgba(200, 50, 50, 0.1)',
+        		borderColor: 'rgba(200, 50, 50, 0.1)',
+      		}]
+    		}
+			}
+		};
+		//f1
+		var hazium_chart = new Chart(hazium_ctx, hazium_config);//hazium
+    var f1chart1 = new Chart(f1_ctx1, config1);//power
+		var f1chart3 = new Chart(f1_ctx3, config3);//HeatStat
+		var f1chart4 = new Chart(f1_ctx4, config4);//F1 VAV REHEAT Damper Position
+		var f1chart5 = new Chart(f1_ctx5, config5);//F1 REHEAT Coil Power
+		var f1chart6 = new Chart(f1_ctx6, config6);//F1 Mass Flow Rate
+		var f1chart7 = new Chart(f1_ctx7, config7);//F1 CO2 Concen
+		var f1chart8 = new Chart(f1_ctx8, config8);//F1 SUPPLY INLET Temp
+		//f2
+		var f2chart1 = new Chart(f2_ctx1, f2config1);//power
+		var f2chart3 = new Chart(f2_ctx3, f2config3);//HeatStat
+		var f2chart4 = new Chart(f2_ctx4, f2config4);//F2 VAV REHEAT Damper Position
+		var f2chart5 = new Chart(f2_ctx5, f2config5);//F2 REHEAT Coil Power
+		var f2chart6 = new Chart(f2_ctx6, f2config6);//F2 Mass Flow Rate
+		var f2chart7 = new Chart(f2_ctx7, f2config7);//F2 CO2 Concen
+		var f2chart8 = new Chart(f2_ctx8, f2config8);//F2 SUPPLY INLET Temp
+		//f3
+		var f3chart1 = new Chart(f3_ctx1, f3config1);//power
+		var f3chart3 = new Chart(f3_ctx3, f3config3);//HeatStat
+		var f3chart4 = new Chart(f3_ctx4, f3config4);//F2 VAV REHEAT Damper Position
+		var f3chart5 = new Chart(f3_ctx5, f3config5);//F2 REHEAT Coil Power
+		var f3chart6 = new Chart(f3_ctx6, f3config6);//F2 Mass Flow Rate
+		var f3chart7 = new Chart(f3_ctx7, f3config7);//F2 CO2 Concen
+		var f3chart8 = new Chart(f3_ctx8, f3config8);//F2 SUPPLY INLET Temp
+	</script>
+	<script>//Tap Function script
+    //tap moving function
+    $(function() {
+			$('ul.tab li').click(function() {
+				var activeTab = $(this).attr('data-tab');
+				$('ul.tab li').removeClass('current');
+				$('.tabcontent').removeClass('current');
+				$(this).addClass('current');
+				$('#' + activeTab).addClass('current');
+			})
+		});
+  </script>
+</body>
+</html>
