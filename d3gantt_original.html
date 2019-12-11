@@ -27,75 +27,64 @@ var svg = d3.selectAll(".svg")
 .attr("class", "svg");
   var taskArray = [
 {
-  task: "conceptualize",
-  type: "development",
-  startTime: "2013-1-28", //year/month/day
-  endTime: "2013-2-1",
+  task: "1F1Z",
+  type: "fadair001",
+  startTime: "2013-1-28 06:00", //year/month/day
+  endTime: "2013-1-28 10:00",
   details: "This actually didn't take any conceptualization"
 },
 
 {
-  task: "sketch",
-  type: "development",
-  startTime: "2013-2-1",
-  endTime: "2013-2-6",
-  details: "No sketching either, really"
+  task: "2F3Z",
+  type: "fadair001",
+  startTime: "2013-1-28 10:00", //year/month/day
+  endTime: "2013-1-28 15:00",
+  details: "This actually didn't take any conceptualization"
 },
 
 {
-  task: "color profiles",
-  type: "development",
-  startTime: "2013-2-6",
-  endTime: "2013-2-9"
+  task: "2F1Z",
+  type: "fadair001",
+  startTime: "2013-1-28 15:00", //year/month/day
+  endTime: "2013-1-28 19:00",
+  details: "This actually didn't take any conceptualization"
 },
 
 {
-  task: "HTML",
-  type: "coding",
-  startTime: "2013-2-2",
-  endTime: "2013-2-6",
-  details: "all three lines of it"
+  task: "1F3Z",
+  type: "pbueno001",
+  startTime: "2013-1-28 06:00", //year/month/day
+  endTime: "2013-1-28 08:00",
+  details: "This actually didn't take any conceptualization"
 },
 
 {
-  task: "write the JS",
-  type: "coding",
-  startTime: "2013-2-6",
-  endTime: "2013-2-9"
+  task: "1F2Z",
+  type: "pbueno001",
+  startTime: "2013-1-28 08:00", //year/month/day
+  endTime: "2013-1-28 21:00",
+  details: "This actually didn't take any conceptualization"
 },
 
 {
-  task: "advertise",
-  type: "promotion",
-  startTime: "2013-2-9",
-  endTime: "2013-2-12",
-  details: "This counts, right?"
+  task: "1F1Z",
+  type: "junger002",
+  startTime: "2013-1-28 06:00", //year/month/day
+  endTime: "2013-1-28 18:00",
+  details: "This actually didn't take any conceptualization"
 },
 
 {
-  task: "spam links",
-  type: "promotion",
-  startTime: "2013-2-12",
-  endTime: "2013-2-14"
-},
-{
-  task: "eat",
-  type: "celebration",
-  startTime: "2013-2-8",
-  endTime: "2013-2-13",
-  details: "All the things"
-},
-
-{
-  task: "crying",
-  type: "celebration",
-  startTime: "2013-2-13",
-  endTime: "2013-2-16"
-},
+  task: "3F1Z",
+  type: "junger002",
+  startTime: "2013-1-28 18:00", //year/month/day
+  endTime: "2013-1-29 02:00",
+  details: "This actually didn't take any conceptualization"
+}
 
 ];
 
-var dateFormat = d3.time.format("%Y-%m-%d");
+var dateFormat = d3.time.format("%Y-%m-%d %H:%M");
 
 var timeScale = d3.time.scale()
       .domain([d3.min(taskArray, function(d) {return dateFormat.parse(d.startTime);}),
@@ -116,7 +105,7 @@ categories = checkUnique(categories);
 makeGant(taskArray, w, h);
 
 var title = svg.append("text")
-            .text("Gantt Chart Process")
+            .text("proxOut-MC2 data chart")
             .attr("x", w/2)
             .attr("y", 25)
             .attr("text-anchor", "middle")
@@ -287,9 +276,9 @@ function makeGrid(theSidePad, theTopPad, w, h){
 var xAxis = d3.svg.axis()
   .scale(timeScale)
   .orient('bottom')
-  .ticks(d3.time.days, 1)
+  .ticks(d3.time.hours, 4)
   .tickSize(-h+theTopPad+20, 0, 0)
-  .tickFormat(d3.time.format('%d %b'));
+  .tickFormat(d3.time.format('%m/%d %H:%M'));
 
 var grid = svg.append('g')
   .attr('class', 'grid')
