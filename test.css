@@ -54,3 +54,9 @@ top: -20px;
   background : red;
   cursor: pointer;
 }
+
+.graph{
+  overflow-x:scroll;
+  overflow-y:scroll;
+  width:50000px;
+}
